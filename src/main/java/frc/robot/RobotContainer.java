@@ -15,11 +15,11 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.PortForwarder;
-import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.event.BooleanEvent;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.CameraConstants;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Factories.AutoFactory;
 import frc.robot.Factories.CommandFactory;
 import frc.robot.Factories.PathFactory;
@@ -114,6 +115,7 @@ public class RobotContainer implements Logged {
         private Trigger canivoreCheck;
         private Trigger lobshootTrigger;
         public Trigger speakerShootTrigger;
+        private Trigger rumbleDriverTrigger;
         public CANBusStatus canInfo;
         @Log.NT(key = "canivoreutil")
         public float busUtil;
@@ -241,8 +243,19 @@ public class RobotContainer implements Logged {
                                                 && m_shooter.bothAtSpeed()
                                                 && m_swerve.getDistanceFromSpeaker() < 3
                                                 && m_swerve.isStopped());
-
                 driver.leftTrigger().and(speakerShootTrigger).onTrue(m_cf.transferNoteToShooterCommand());
+
+                rumbleDriverTrigger = new Trigger(() ->
+
+                m_intake.isIntaking1
+                                && (m_intake.getAmps() > IntakeConstants.noteInIntakeAmps || m_transfer.noteAtIntake()
+                                                || m_transfer.simnoteatintake)
+
+                                || m_swerve.aligning
+                                                && m_swerve.alignedToTarget && m_arm.getAtSetpoint()
+                                                && m_shooter.bothAtSpeed());
+
+                rumbleDriverTrigger.onTrue(m_cf.rumble(driver, RumbleType.kLeftRumble, 1));
 
                 // ela portForwardCameras();
         }
@@ -290,8 +303,6 @@ public class RobotContainer implements Logged {
                                                                 new TransferIntakeToSensor(m_transfer,
                                                                                 m_intake,
                                                                                 m_swerve, 20),
-                                                                m_cf.rumbleCommand(driver)
-                                                                                .withTimeout(.5),
                                                                 Commands.runOnce(() -> forceRobotRelative = false)));
 
                 // pick up notes with vision align
@@ -310,7 +321,6 @@ public class RobotContainer implements Logged {
                                                                                                 () -> -driver.getLeftY(),
                                                                                                 () -> driver.getLeftX(),
                                                                                                 () -> driver.getRightX())),
-                                                                m_cf.rumbleCommand(driver).withTimeout(.5),
                                                                 Commands.runOnce(() -> forceRobotRelative = false)));
 
                 // align with amp corner for lob shots
@@ -321,7 +331,6 @@ public class RobotContainer implements Logged {
                                                                 () -> -driver.getLeftY(),
                                                                 () -> driver.getLeftX(),
                                                                 () -> driver.getRightX(), true),
-                                                m_cf.rumbleCommand(driver),
                                                 m_cf.positionArmRunShooterByDistanceLobShot(false)))
 
                                 .onFalse(
