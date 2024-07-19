@@ -754,13 +754,17 @@ public final class Constants {
         }
 
         public static final class ClimberConstants {
-                public static final double maxClimberMotorRPM = 5700;
+                public static final double maxClimberMotorRPM = 4800;
                 public static final double climberConversionPositionFactor = .1;
                 public static final double climberConversionVelocityFactor = climberConversionPositionFactor / 60;
                 public static final double voltageComp = 12;
                 public static final IdleMode climberIdleMode = IdleMode.kBrake;
                 public static final int climberContinuousCurrentLimit = 60;
                 public static double jogSpeed = .25;
+                public static double minPosition = -1;
+                public static double maxPosition = 15;
+                public static double maxinchespersec = climberConversionPositionFactor * maxClimberMotorRPM / 60;// 8
+                                                                                                                 // ips
         }
 
 }

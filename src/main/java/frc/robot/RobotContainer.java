@@ -79,7 +79,7 @@ public class RobotContainer implements Logged {
 
         public final SendableChooser<String> m_batteryChooser = new SendableChooser<String>();
 
-        private final CommandXboxController driver = new CommandXboxController(0);
+        final CommandXboxController driver = new CommandXboxController(0);
 
         private final CommandXboxController codriver = new CommandXboxController(1);
 
@@ -107,14 +107,13 @@ public class RobotContainer implements Logged {
 
         private boolean forceRobotRelative = false;
 
-        // private Trigger logShotTrigger;
-
         EventLoop checkAutoSelectLoop;
 
         private BooleanEvent doAutoSetup;
 
         private Trigger canivoreCheck;
         private Trigger lobshootTrigger;
+        public Trigger speakerShootTrigger;
         public CANBusStatus canInfo;
         @Log.NT(key = "canivoreutil")
         public float busUtil;
@@ -221,19 +220,27 @@ public class RobotContainer implements Logged {
                                         () -> !canInfo.Status.isOK() || canInfo.Status.isError()
                                                         || canInfo.Status.isWarning());
                         canivoreCheck.onTrue(Commands.runOnce(() -> logCanivore()));
-
-                        lobshootTrigger = new Trigger(
-                                        () -> m_transfer.noteAtIntake() && m_swerve.aligning
-                                                        && m_swerve.alignedToTarget && m_arm.getAtSetpoint()
-                                                        && m_shooter.bothAtSpeed() && driver.leftBumper().getAsBoolean()
-                                                        && m_swerve.getDistanceFromStageEdge() < 4.2
-                                                        && m_swerve.getDistanceFromStageEdge() > 3
-                                                        && Math.abs(m_swerve
-                                                                        .getFieldRelativeSpeeds().vxMetersPerSecond) < 1
-                                                        && m_swerve.getY() < 5);
-
-                        lobshootTrigger.onTrue(m_cf.transferNoteToShooterCommand());
                 }
+                lobshootTrigger = new Trigger(
+                                () -> (m_transfer.noteAtIntake() || m_transfer.simnoteatintake)
+                                                && m_swerve.alignedToTarget && m_arm.getAtSetpoint()
+                                                && m_shooter.bothAtSpeed()
+                                                && m_swerve.getDistanceFromStageEdge() < 4.2
+                                                && m_swerve.getDistanceFromStageEdge() > 3
+                                                && Math.abs(Math.abs(m_swerve
+                                                                .getFieldRelativeSpeeds().vxMetersPerSecond)) < 1
+                                                && m_swerve.getY() < 5);
+
+                driver.leftBumper().and(lobshootTrigger).onTrue(m_cf.transferNoteToShooterCommand());
+
+                speakerShootTrigger = new Trigger(
+                                () -> (m_transfer.noteAtIntake() || m_transfer.simnoteatintake)
+                                                && m_swerve.alignedToTarget && m_arm.getAtSetpoint()
+                                                && m_shooter.bothAtSpeed()
+                                                && m_swerve.getDistanceFromSpeaker() < 3
+                                                && m_swerve.isStopped());
+
+                driver.leftTrigger().and(speakerShootTrigger).onTrue(m_cf.transferNoteToShooterCommand());
 
                 // ela portForwardCameras();
         }
@@ -243,6 +250,12 @@ public class RobotContainer implements Logged {
                 log("warncanivore", canInfo.Status.isWarning());
                 log("okcanivore", canInfo.Status.isOK());
                 log("canivoredesc", canInfo.Status.getDescription());
+        }
+
+        public void periodic() {
+
+                SmartDashboard.putBoolean("TSTTRY", speakerShootTrigger.getAsBoolean());
+
         }
 
         private void configureDriverBindings() {
@@ -263,33 +276,40 @@ public class RobotContainer implements Logged {
                                                                 () -> driver.getRightX(), false),
                                                 m_cf.positionArmRunShooterByDistance(false)));
 
-                driver.rightBumper().and(driver.a().negate()).onTrue(
-                                Commands.sequence(
-                                                Commands.runOnce(() -> forceRobotRelative = true),
-                                                m_intake.startIntakeCommand(),
-                                                m_arm.setGoalCommand(ArmConstants.pickupAngleRadians),
+                driver.rightBumper().and(driver.a().negate())
+                                .onTrue(
+                                                Commands.sequence(
+                                                                Commands.runOnce(() -> forceRobotRelative = true),
+                                                                m_intake.startIntakeCommand(),
+                                                                m_arm.setGoalCommand(ArmConstants.pickupAngleRadians)))
+
+                                .whileTrue(
                                                 Commands.parallel(
-                                                                new TransferIntakeToSensor(m_transfer, m_intake,
+                                                                new TransferIntakeToSensor(m_transfer,
+                                                                                m_intake,
                                                                                 m_swerve, 20),
-                                                                m_cf.rumbleCommand(driver))))
+                                                                m_cf.rumbleCommand(driver)))
                                 .onFalse(Commands.runOnce(() -> forceRobotRelative = false));
 
                 // pick up notes with vision align
-                driver.rightBumper().and(driver.a()).onTrue(
-                                Commands.sequence(Commands.runOnce(() -> forceRobotRelative = true),
-                                                m_arm.setGoalCommand(ArmConstants.pickupAngleRadians),
-                                                Commands.waitUntil(() -> m_arm.getAtSetpoint()),
-                                                m_intake.startIntakeCommand(),
-                                                Commands.deadline(
-                                                                new TransferIntakeToSensor(m_transfer,
-                                                                                m_intake, m_swerve, 120),
-                                                                new AlignToNote(
-                                                                                m_swerve,
-                                                                                CameraConstants.rearCamera.camname,
-                                                                                () -> -driver.getLeftY(),
-                                                                                () -> driver.getLeftX(),
-                                                                                () -> driver.getRightX()),
-                                                                m_cf.rumbleCommand(driver))))
+                driver.rightBumper().and(driver.a())
+
+                                .onTrue(
+                                                Commands.sequence(
+                                                                Commands.runOnce(() -> forceRobotRelative = true),
+                                                                m_arm.setGoalCommand(ArmConstants.pickupAngleRadians),
+                                                                m_intake.startIntakeCommand()))
+                                .whileTrue(Commands.deadline(
+                                                new TransferIntakeToSensor(m_transfer,
+                                                                m_intake, m_swerve,
+                                                                120),
+                                                new AlignToNote(
+                                                                m_swerve,
+                                                                CameraConstants.rearCamera.camname,
+                                                                () -> -driver.getLeftY(),
+                                                                () -> driver.getLeftX(),
+                                                                () -> driver.getRightX()),
+                                                m_cf.rumbleCommand(driver)))
                                 .onFalse(Commands.runOnce(() -> forceRobotRelative = false));
 
                 // align with amp corner for lob shots
@@ -321,11 +341,15 @@ public class RobotContainer implements Logged {
 
                 driver.x().onTrue(m_shooter.startShooterCommand(3500, 5));
 
-                driver.povUp().onTrue(Commands.parallel(new PositionClimber(m_climber, 10, .6),
+                driver.y().onTrue(m_cf.positionArmRunShooterSpecialCase(
+                                Constants.subwfrArmAngle,
+                                Constants.subwfrShooterSpeed));
+
+                driver.povUp().onTrue(Commands.parallel(new PositionClimber(m_climber, 10),
                                 new PrepositionForClimb(m_swerve, m_cf, true),
                                 Commands.runOnce(() -> forceRobotRelative = true)));
 
-                driver.povDown().onTrue(Commands.parallel(new PositionClimber(m_climber, 10, .6),
+                driver.povDown().onTrue(Commands.parallel(new PositionClimber(m_climber, 10),
                                 new PrepositionForClimb(m_swerve, m_cf, false),
                                 Commands.runOnce(() -> forceRobotRelative = true)));
 
@@ -360,27 +384,27 @@ public class RobotContainer implements Logged {
         private void configureCodriverBindings() {
                 // CoDriver
                 // left and right triggers are for climber
-                codriver.leftTrigger().and(codriver.povUp().negate()).and(codriver.a().negate())
-                                .whileTrue(m_climber.raiseClimberArmsCommand(0.3))
+                codriver.leftTrigger().and(codriver.y())
+                                .whileTrue(m_climber.raiseClimberArmsCommand(0.1))// .8 ips approx
                                 .onFalse(m_climber.stopClimberCommand());
 
-                codriver.leftTrigger().and(codriver.povUp()).and(codriver.a().negate())
-                                .whileTrue(m_climber.raiseClimberArmsCommand(0.6))
+                codriver.leftTrigger().and(codriver.povUp())
+                                .whileTrue(m_climber.raiseClimberArmsCommand(0.2))// 1.6 ips approx
                                 .onFalse(m_climber.stopClimberCommand());
 
-                codriver.leftTrigger().and(codriver.a()).onTrue(new PositionClimber(m_climber, 10, .6));
-
-                codriver.leftTrigger().and(codriver.b()).onTrue(new PositionClimber(m_climber, 20, .6));
-
-                codriver.rightTrigger().and(codriver.povDown().negate())
-                                .whileTrue(m_climber.lowerClimberArmsCommand(0.3))
+                codriver.leftTrigger().and(codriver.a())
+                                .whileTrue(m_climber.lowerClimberArmsCommand(0.1))
                                 .onFalse(m_climber.stopClimberCommand());
 
-                codriver.rightTrigger().and(codriver.povDown())
-                                .whileTrue(m_climber.lowerClimberArmsCommand(0.6))
+                codriver.leftTrigger().and(codriver.povDown())
+                                .whileTrue(m_climber.lowerClimberArmsCommand(0.2))
                                 .onFalse(m_climber.stopClimberCommand());
 
-                // left bumper for commands used during match
+                codriver.leftTrigger().and(codriver.x())
+                                .onTrue(new PositionClimber(m_climber, 10));
+
+                codriver.leftTrigger().and(codriver.b())
+                                .onTrue(new PositionClimber(m_climber, 0));
 
                 codriver.leftBumper().and(codriver.y())
                                 .onTrue(m_cf.positionArmRunShooterSpecialCase(
@@ -390,35 +414,19 @@ public class RobotContainer implements Logged {
                 codriver.leftBumper().and(codriver.a())
                                 .onTrue(m_arm.setGoalCommand(ArmConstants.armAngleOnBottomStopBar));
 
-                // codriver.leftBumper().and(codriver.b()).onTrue(
-
-                codriver.leftBumper().and(codriver.povUp())
-                                .onTrue(m_sd.incArmOffsetDegreesCommand(.5));
-
-                codriver.leftBumper().and(codriver.povDown()).onTrue(
-                                m_sd.incArmOffsetDegreesCommand(-.5));
-
-                codriver.leftBumper().and(codriver.povLeft()).onTrue(
-                                m_sd.resetArmOffsetDegreesCommand());
-
-                codriver.leftBumper().and(codriver.povRight()).onTrue(
-                                m_sd.setArmOffsetDegreesCommand(2));
-
-                // right bumper occasional use
-
                 if (codriver.rightBumper().and(codriver.start()).getAsBoolean() && DriverStation.isDisabled())
                         Commands.runOnce(() -> m_arm.armMotor.setIdleMode(IdleMode.kCoast)).ignoringDisable(true);
 
                 codriver.rightBumper().and(codriver.y()).whileTrue(
                                 Commands.run(() -> m_swerve.wheelsAlign(), m_swerve));
 
-                codriver.rightBumper().and(codriver.x()).onTrue(
+                codriver.rightBumper().and(codriver.povUp()).onTrue(
                                 Commands.parallel(
                                                 Commands.runOnce(() -> m_swerve.absoluteResetFrontModuleEncoders()),
                                                 Commands.runOnce(() -> m_swerve.absoluteResetBackModuleEncoders())));
 
-                codriver.rightBumper().and(codriver.back()).whileTrue(
-                                m_intake.reverseIntakeCommand())
+                codriver.rightBumper().and(codriver.x())
+                                .whileTrue(m_intake.reverseIntakeCommand())
                                 .onFalse(m_intake.stopIntakeCommand());
 
         }
@@ -445,11 +453,11 @@ public class RobotContainer implements Logged {
                 // setup.leftBumper().onTrue(m_arm.setGoalCommand(Units.degreesToRadians(25)));
 
                 setup.povDown().onTrue(
-                                new PositionClimber(m_climber, 5, .6));
+                                new PositionClimber(m_climber, 5));
 
-                setup.povUp().onTrue(new PositionClimber(m_climber, 10, .6));
+                setup.povUp().onTrue(new PositionClimber(m_climber, 10));
 
-                setup.leftTrigger().onTrue(new PositionClimber(m_climber, 12, .6));
+                setup.leftTrigger().onTrue(new PositionClimber(m_climber, 12));
 
                 setup.rightBumper().onTrue(m_arm.setGoalCommand(Units.degreesToRadians(35)));
 

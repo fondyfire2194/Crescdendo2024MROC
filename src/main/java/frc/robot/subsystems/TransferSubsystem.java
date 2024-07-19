@@ -103,7 +103,7 @@ public class TransferSubsystem extends SubsystemBase implements Logged {
   }
 
   public Command transferToShooterCommand() {
-    return Commands.run(() -> transferToShooter()).until(() -> !noteAtIntake() && RobotBase.isReal())
+    return Commands.run(() -> transferToShooter())
         .withTimeout(TransferConstants.clearShooterTime)
         .andThen(stopTransferCommand());
   }

@@ -20,6 +20,7 @@ import frc.lib.util.CANSparkMaxUtil;
 import frc.lib.util.CANSparkMaxUtil.Usage;
 import frc.robot.Constants;
 import frc.robot.Constants.CANIDConstants;
+import frc.robot.Constants.ClimberConstants;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -44,6 +45,8 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
   private double currentSpeedRight;
   @Log.NT(key = "erroright")
   private double errorright;
+  public double positionError;
+  public boolean directionMinus;
 
   public ClimberSubsystem() {
     climberMotorLeft = new CANSparkMax(CANIDConstants.climberIDLeft, MotorType.kBrushless);
@@ -113,7 +116,6 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
     climberMotorLeft.stopMotor();
     climberMotorLeft.setVoltage(0);
     currentSpeedLeft = 0;
-
   }
 
   public Command stopClimberCommand() {
@@ -131,20 +133,15 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
   }
 
   public void runLeftClimberMotor(double speed) {
-    if (getPositionLeft() > 13.0) {
-      speed = speed * 0.5;
-    }
     currentSpeedLeft = speed;
     climberMotorLeft.setVoltage(speed * RobotController.getBatteryVoltage());
 
   }
 
   public void runRightClimberMotor(double speed) {
-    if (getPositionRight() > 13.0) {
-      speed = speed * 0.5;
-    }
     currentSpeedRight = speed;
     climberMotorRight.setVoltage(speed * RobotController.getBatteryVoltage());
+
   }
 
   public void runClimberMotors(double speed) {
@@ -153,22 +150,24 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
   }
 
   public void raiseClimber(double speed) {
-    runClimberMotors(speed * 0.2);
-    if (getPositionLeft() > 100.0) {
-      runClimberMotors(speed * 0.2);
-    } else {
+    if (getPositionLeft() > ClimberConstants.maxPosition - 3)
+      speed = .05;
+
+    if (getPositionLeft() >= ClimberConstants.maxPosition)
+      stopMotors();
+    else
       runClimberMotors(speed);
-    }
   }
 
   public void lowerClimber(double speed) {
     speed *= -1;
-    runClimberMotors(speed * 0.2);
-    if (getPositionLeft() < 10) {
-      runClimberMotors(speed * 0.2);
-    } else {
+    if (getPositionLeft() < ClimberConstants.minPosition + 3)
+      speed = -.05;
+
+    if (getPositionLeft() < ClimberConstants.minPosition + 1)
+      stopMotors();
+    else
       runClimberMotors(speed);
-    }
   }
 
   public Command lowerClimberArmsCommand(double speed) {
@@ -176,6 +175,7 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
   }
 
   public Command raiseClimberArmsCommand(double speed) {
+    SmartDashboard.putNumber("Climber/upspeed2", speed);
     return Commands.run(() -> raiseClimber(speed));
   }
 
@@ -207,12 +207,12 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
 
   @Log.NT(key = "leftattarget")
   public boolean getLeftAtTarget(double target) {
-    return getPositionLeft() > target;
+    return !directionMinus && getPositionLeft() > target || directionMinus && getPositionLeft() < target;
   }
 
   @Log.NT(key = "rightattarget")
   public boolean getRightAtTarget(double target) {
-    return getPositionRight() > target;
+    return !directionMinus && getPositionRight() > target || directionMinus && getPositionRight() < target;
   }
 
   @Log.NT(key = "climberleftstickyfault")
@@ -259,8 +259,9 @@ public class ClimberSubsystem extends SubsystemBase implements Logged {
 
   @Override
   public void simulationPeriodic() {
-    simpositionleft += currentSpeedLeft * .2;
-    simpositionright += currentSpeedRight * .2;
+
+    simpositionright += ClimberConstants.maxinchespersec * currentSpeedRight * .02;
+    simpositionleft += ClimberConstants.maxinchespersec * currentSpeedLeft * .02;
 
   }
 }

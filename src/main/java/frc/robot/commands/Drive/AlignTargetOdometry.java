@@ -9,6 +9,7 @@ import java.util.function.DoubleSupplier;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
@@ -86,7 +87,7 @@ public class AlignTargetOdometry extends Command {
         true,
         false);
 
-    m_swerve.alignedToTarget = m_alignTargetPID.atSetpoint();
+    m_swerve.alignedToTarget = m_alignTargetPID.atSetpoint() || RobotBase.isSimulation();
   }
 
   // Called once the command ends or is interrupted.

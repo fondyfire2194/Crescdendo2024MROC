@@ -4,42 +4,51 @@
 
 package frc.robot.commands.Climber;
 
+import java.security.AlgorithmConstraints;
+
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.ClimberConstants;
 import frc.robot.subsystems.ClimberSubsystem;
 
 public class PositionClimber extends Command {
   /** Creates a new JogShooter. */
   private ClimberSubsystem m_climber;
   private double m_target;
-  private double m_speed;
 
-  public PositionClimber(ClimberSubsystem climber, double target, double speed) {
+  public PositionClimber(ClimberSubsystem climber, double target) {
     // Use addRequirements() here to declare subsystem dependencies.
     m_climber = climber;
     m_target = target;
-    m_speed = speed;
+
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-
+    m_climber.directionMinus = false;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double positionError = m_target - m_climber.getPositionLeft();
-    double usespeed = m_speed;
+    SmartDashboard.putNumber("Climber/target", m_target);
+    m_climber.positionError = m_target - m_climber.getPositionLeft();
 
-    if (positionError < 6)
-      usespeed = m_speed / 2;
+    double usespeed = .3;
+    if (m_climber.positionError < 0) {
+      usespeed = -.3;
+      m_climber.directionMinus = true;
+    }
+    SmartDashboard.putNumber("Climber/poserr", m_climber.positionError);
+    if (Math.abs(m_climber.positionError) < 6)
+      usespeed *= .5;
 
-    if (positionError < 1)
-      usespeed = m_speed / 4;
-
-
+    if (Math.abs(m_climber.positionError) < 1)
+      usespeed *= .25;
+    SmartDashboard.putNumber("Climber/usespd", usespeed);
     if (!m_climber.getLeftAtTarget(m_target)) {
       m_climber.runLeftClimberMotor(usespeed);
       m_climber.runRightClimberMotor(usespeed);
@@ -58,6 +67,9 @@ public class PositionClimber extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return m_climber.getLeftAtTarget(m_target);
+    return m_climber.getLeftAtTarget(m_target)
+        || m_climber.getPositionLeft() > ClimberConstants.maxPosition
+        || m_climber.getPositionLeft() < ClimberConstants.minPosition;
+
   }
 }
