@@ -57,6 +57,10 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
   private SlewRateLimiter bottomSpeedLimiter = new SlewRateLimiter(15000);
   public boolean topMotorConnected;
   public boolean bottomMotorConnected;
+  @Log.NT(key = "oktriggerlobshot")
+  public boolean okTriggerLobShot;
+  @Log.NT(key = "oktriggerspkrshot")
+  public boolean okTriggerSpeakerShot;
 
   /** Creates a new Shooter. */
   public ShooterSubsystem() {
@@ -103,6 +107,8 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
       setBottomKpKdKi();
     motor.burnFlash();
     encoder.setPosition(0.0);
+    okTriggerLobShot = true;
+    okTriggerSpeakerShot = false;
   }
 
   public void stopMotors() {
@@ -176,6 +182,7 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
     else
       return topSimRPM;
   }
+
   @Log.NT(key = "shtrbottomrpm")
   public double getRPMBottom() {
     if (RobotBase.isReal())
@@ -184,8 +191,8 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
       return bottomSimRPM;
   }
 
-  public double getNoteLinearSpeed(){
-    return getRPMTop()* ShooterConstants.rollerDiameter*Math.PI;
+  public double getNoteLinearSpeed() {
+    return getRPMTop() * ShooterConstants.rollerDiameter * Math.PI;
   }
 
   public void setCommandRPM(double rpm) {
@@ -261,6 +268,14 @@ public class ShooterSubsystem extends SubsystemBase implements Logged {
     return Commands.sequence(
         Commands.runOnce(() -> topRoller.clearFaults()),
         runOnce(() -> bottomRoller.clearFaults()));
+  }
+
+  public void toggleTriggerSpkrShot() {
+    okTriggerSpeakerShot = !okTriggerSpeakerShot;
+  }
+
+  public void toggleTriggerLobShot() {
+    okTriggerLobShot = !okTriggerLobShot;
   }
 
   @Override

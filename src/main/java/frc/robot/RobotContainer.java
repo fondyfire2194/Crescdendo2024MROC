@@ -102,10 +102,10 @@ public class RobotContainer implements Logged {
         private SourceAmpAutoCommands m_srcac;
 
         BooleanSupplier keepAngle;
-
+        @Log.NT(key = "fieldrelative")
         public BooleanSupplier fieldRelative;
-
-        private boolean forceRobotRelative = false;
+        @Log.NT(key = "forcerobotrelative")
+        public boolean forceRobotRelative = false;
 
         EventLoop checkAutoSelectLoop;
 
@@ -222,7 +222,8 @@ public class RobotContainer implements Logged {
                         canivoreCheck.onTrue(Commands.runOnce(() -> logCanivore()));
                 }
                 lobshootTrigger = new Trigger(
-                                () -> (m_transfer.noteAtIntake() || m_transfer.simnoteatintake)
+                                () -> m_shooter.okTriggerLobShot
+                                                && (m_transfer.noteAtIntake() || m_transfer.simnoteatintake)
                                                 && m_swerve.alignedToTarget && m_arm.getAtSetpoint()
                                                 && m_shooter.bothAtSpeed()
                                                 && m_swerve.getDistanceFromStageEdge() < 4.2
@@ -234,7 +235,8 @@ public class RobotContainer implements Logged {
                 driver.leftBumper().and(lobshootTrigger).onTrue(m_cf.transferNoteToShooterCommand());
 
                 speakerShootTrigger = new Trigger(
-                                () -> (m_transfer.noteAtIntake() || m_transfer.simnoteatintake)
+                                () -> m_shooter.okTriggerSpeakerShot
+                                                && (m_transfer.noteAtIntake() || m_transfer.simnoteatintake)
                                                 && m_swerve.alignedToTarget && m_arm.getAtSetpoint()
                                                 && m_shooter.bothAtSpeed()
                                                 && m_swerve.getDistanceFromSpeaker() < 3
@@ -279,38 +281,37 @@ public class RobotContainer implements Logged {
                 driver.rightBumper().and(driver.a().negate())
                                 .onTrue(
                                                 Commands.sequence(
-                                                                Commands.runOnce(() -> forceRobotRelative = true),
+                                                                Commands.runOnce(
+                                                                                () -> forceRobotRelative = true),
                                                                 m_intake.startIntakeCommand(),
-                                                                m_arm.setGoalCommand(ArmConstants.pickupAngleRadians)))
+                                                                m_arm.setGoalCommand(
+                                                                                ArmConstants.pickupAngleRadians),
 
-                                .whileTrue(
-                                                Commands.parallel(
                                                                 new TransferIntakeToSensor(m_transfer,
                                                                                 m_intake,
                                                                                 m_swerve, 20),
-                                                                m_cf.rumbleCommand(driver)))
-                                .onFalse(Commands.runOnce(() -> forceRobotRelative = false));
+                                                                m_cf.rumbleCommand(driver)
+                                                                                .withTimeout(.5),
+                                                                Commands.runOnce(() -> forceRobotRelative = false)));
 
                 // pick up notes with vision align
                 driver.rightBumper().and(driver.a())
-
                                 .onTrue(
                                                 Commands.sequence(
-                                                                Commands.runOnce(() -> forceRobotRelative = true),
                                                                 m_arm.setGoalCommand(ArmConstants.pickupAngleRadians),
-                                                                m_intake.startIntakeCommand()))
-                                .whileTrue(Commands.deadline(
-                                                new TransferIntakeToSensor(m_transfer,
-                                                                m_intake, m_swerve,
-                                                                120),
-                                                new AlignToNote(
-                                                                m_swerve,
-                                                                CameraConstants.rearCamera.camname,
-                                                                () -> -driver.getLeftY(),
-                                                                () -> driver.getLeftX(),
-                                                                () -> driver.getRightX()),
-                                                m_cf.rumbleCommand(driver)))
-                                .onFalse(Commands.runOnce(() -> forceRobotRelative = false));
+                                                                m_intake.startIntakeCommand(),
+                                                                Commands.deadline(
+                                                                                new TransferIntakeToSensor(m_transfer,
+                                                                                                m_intake, m_swerve,
+                                                                                                20),
+                                                                                new AlignToNote(
+                                                                                                m_swerve,
+                                                                                                CameraConstants.rearCamera.camname,
+                                                                                                () -> -driver.getLeftY(),
+                                                                                                () -> driver.getLeftX(),
+                                                                                                () -> driver.getRightX())),
+                                                                m_cf.rumbleCommand(driver).withTimeout(.5),
+                                                                Commands.runOnce(() -> forceRobotRelative = false)));
 
                 // align with amp corner for lob shots
                 driver.leftBumper().whileTrue(
@@ -429,12 +430,15 @@ public class RobotContainer implements Logged {
                                 .whileTrue(m_intake.reverseIntakeCommand())
                                 .onFalse(m_intake.stopIntakeCommand());
 
+                codriver.rightTrigger().and(codriver.a())
+                                .onTrue(Commands.runOnce(() -> m_shooter.toggleTriggerSpkrShot()));
+                codriver.rightTrigger().and(codriver.y())
+                                .onTrue(Commands.runOnce(() -> m_shooter.toggleTriggerLobShot()));
+
         }
 
         private void configureSetupBindings() {
                 // Setup
-                // KEEP IN BUTTON ORDER
-                // jogs are in case note gets stuck
 
                 setup.a().onTrue(m_climber.lockClimberCommand());
 

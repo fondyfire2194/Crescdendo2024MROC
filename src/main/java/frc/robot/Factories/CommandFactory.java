@@ -227,11 +227,11 @@ public class CommandFactory {
                         } else
                                 controller.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
 
-                        if (noteAtIntake() || m_intake.getAmps() > ArmConstants.noteAtIntakeAmps
+                        if (noteAtIntake()
                                         || m_transfer.simnoteatintake) {
                                 controller.getHID().setRumble(RumbleType.kRightRumble, 1.0);
                                 if (RobotBase.isSimulation())
-                                        SmartDashboard.putString("BUZZ ", "NoteAtIntake");                                        
+                                        SmartDashboard.putString("BUZZ ", "NoteAtIntake");
                         } else
                                 controller.getHID().setRumble(RumbleType.kRightRumble, 0.0);
                 })
@@ -252,14 +252,15 @@ public class CommandFactory {
                         tempPose2d = GeometryUtil.flipFieldPose(startPose);
                 return Commands.runOnce(() -> m_swerve.resetPoseEstimator(tempPose2d));
         }
+
         public boolean isRedAlliance() {
                 Optional<Alliance> alliance = DriverStation.getAlliance();
                 if (alliance.isPresent()) {
-                  return alliance.get() == Alliance.Red;
+                        return alliance.get() == Alliance.Red;
                 } else {
-                  return false;
+                        return false;
                 }
-              }
+        }
 
         public Command resetAll() {
                 return Commands.parallel(

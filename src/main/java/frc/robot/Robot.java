@@ -142,6 +142,9 @@ public class Robot extends TimedRobot implements Logged {
     }
 
     SmartDashboard.putBoolean("FieldRelative", m_robotContainer.fieldRelative.getAsBoolean());
+    SmartDashboard.putBoolean("ForceRR", m_robotContainer.forceRobotRelative);
+
+
   }
 
   @Override
