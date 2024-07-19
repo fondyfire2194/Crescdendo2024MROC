@@ -36,12 +36,14 @@ public class TransferIntakeToSensor extends Command {
     endTimer.reset();
     endTimer.start();
     m_intake.noteMissed = false;
+    m_intake.resetIsIntakingSim();
     if (RobotBase.isSimulation()) {
       m_intake.isIntaking4 = m_intake.isIntaking3;
       m_intake.isIntaking3 = m_intake.isIntaking2;
       m_intake.isIntaking2 = m_intake.isIntaking1;
-      m_intake.isIntaking1 = true;
     }
+    m_intake.isIntaking1 = true;
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -81,7 +83,7 @@ public class TransferIntakeToSensor extends Command {
     m_transfer.stopMotor();
     if (DriverStation.isTeleopEnabled()) {
       m_intake.stopMotor();
-      m_intake.resetIsIntakingSim();
+
     }
     m_transfer.enableLimitSwitch(false);
   }

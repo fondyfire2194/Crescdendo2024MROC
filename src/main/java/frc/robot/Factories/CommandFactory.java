@@ -238,6 +238,19 @@ public class CommandFactory {
                                 .finallyDo(() -> controller.getHID().setRumble(RumbleType.kBothRumble, 0.0));
         }
 
+        public Command rumble(CommandXboxController controller, RumbleType type, double timeout) {
+                return Commands.sequence(
+                                Commands.race(
+                                                Commands.either(
+                                                                Commands.run(() -> controller.getHID().setRumble(type,
+                                                                                1.0)),
+                                                                Commands.runOnce(() -> SmartDashboard.putString("BUZZ",
+                                                                                "BUZZ")),
+                                                                () -> RobotBase.isReal()),
+                                                Commands.waitSeconds(timeout)),
+                                Commands.runOnce(() -> controller.getHID().setRumble(RumbleType.kBothRumble, 0.0)));
+        }
+
         public Command startShooterSpeedCompedCommand(double toprpm) {
                 double speed = Math.sqrt(Math.pow(m_swerve.getChassisSpeeds().vxMetersPerSecond, 2)
                                 + Math.pow(m_swerve.getChassisSpeeds().vyMetersPerSecond, 2));
