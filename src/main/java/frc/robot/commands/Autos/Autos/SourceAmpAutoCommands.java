@@ -37,7 +37,7 @@ public class SourceAmpAutoCommands {
                 m_transfer = transfer;
                 m_cf = cf;
                 m_pf = pf;
-                m_sd=sd;
+                m_sd = sd;
         }
 
         public Command setSourceStart() {
@@ -130,6 +130,18 @@ public class SourceAmpAutoCommands {
                                                 new RunPPath(m_swerve,
                                                                 path2),
                                                 () -> innerNoteFirst),
+                                m_cf.doIntake());
+        }
+
+        public Command pickUpAdjacentNoteInner(
+                        PathPlannerPath path1, boolean innerNoteFirst) {
+                return
+
+                Commands.parallel(
+                                Commands.either(
+                                                new RunPPath(m_swerve, path1),
+                                                new GetAnotherNoteSource(m_swerve, m_transfer, m_intake, m_cf, m_pf).asProxy(),
+                                                () -> !innerNoteFirst),
                                 m_cf.doIntake());
         }
 

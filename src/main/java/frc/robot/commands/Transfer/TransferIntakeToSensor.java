@@ -36,7 +36,8 @@ public class TransferIntakeToSensor extends Command {
     endTimer.reset();
     endTimer.start();
     m_intake.noteMissed = false;
-    m_intake.resetIsIntakingSim();
+    if (RobotBase.isReal())
+      m_intake.resetIsIntakingSim();
     if (RobotBase.isSimulation()) {
       m_intake.isIntaking4 = m_intake.isIntaking3;
       m_intake.isIntaking3 = m_intake.isIntaking2;

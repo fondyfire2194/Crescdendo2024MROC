@@ -32,7 +32,7 @@ public class AutoSourceCompleteV2 extends SequentialCommandGroup {
                         TransferSubsystem transfer,
                         boolean innerNoteFirst) {
 
-                addCommands( 
+                addCommands(
                                 srcac.setSourceStart(),
                                 Commands.race(
                                                 Commands.waitSeconds(.75),
@@ -47,16 +47,22 @@ public class AutoSourceCompleteV2 extends SequentialCommandGroup {
 
                                 Commands.either(
                                                 srcac.moveShootCenter(pf.pathMaps.get(sourcepaths.Center4ToSourceShoot
-                                                                                .name()),
+                                                                .name()),
                                                                 pf.pathMaps.get(sourcepaths.Center5ToSourceShoot
                                                                                 .name()),
                                                                 innerNoteFirst),
 
-                                                srcac.pickUpAdjacentNote(pf.pathMaps.get(sourcepaths.Center4ToCenter5
-                                                                                .name()),
-                                                                pf.pathMaps.get(sourcepaths.Center5ToCenter4
-                                                                                .name()),
-                                                                innerNoteFirst),
+                                                // srcac.pickUpAdjacentNote(pf.pathMaps.get(sourcepaths.Center4ToCenter5
+                                                //                 .name()),
+                                                //                 pf.pathMaps.get(sourcepaths.Center5ToCenter4
+                                                //                                 .name()),
+                                                //                 innerNoteFirst),
+
+                                                srcac.pickUpAdjacentNoteInner(
+                                                pf.pathMaps.get(sourcepaths.Center5ToCenter4
+                                                .name()),
+                                                innerNoteFirst),
+
                                                 () -> cf.noteAtIntake()),
 
                                 // need to know if we shot or tried to pickup adjacent
@@ -64,7 +70,8 @@ public class AutoSourceCompleteV2 extends SequentialCommandGroup {
                                 // if the latter robot is close to field center
 
                                 Commands.either(
-                                                srcac.pickUpNoteAfterShootVision(pf.pathMaps.get(sourcepaths.SourceShootToCenter5
+                                                srcac.pickUpNoteAfterShootVision(
+                                                                pf.pathMaps.get(sourcepaths.SourceShootToCenter5
                                                                                 .name()),
                                                                 pf.pathMaps.get(sourcepaths.SourceShootToCenter4
                                                                                 .name()),
