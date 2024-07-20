@@ -350,7 +350,7 @@ public final class Constants {
                                 Rotation2d.fromDegrees(0.0));// 8 ft high
 
                 public static final Pose2d stageBlueAllianceClimb = new Pose2d(6.17, 4.13,
-                                Rotation2d.fromDegrees(180.0));
+                                Rotation2d.fromDegrees(0.0));
 
                 // public static final Pose2d stageRedAlliance = new Pose2d(FIELD_LENGTH -
                 // Units.inchesToMeters(190),
@@ -417,18 +417,18 @@ public final class Constants {
 
                 // poses for blue stage climb
                 public static final Pose2d blueSourceCenter = new Pose2d(4, 2.75,
-                                new Rotation2d(Units.degreesToRadians(60)));
+                                new Rotation2d(Units.degreesToRadians(-120)));
                 public static final Pose2d blueSourceSpeaker = new Pose2d(3.06, 2.85,
                                 new Rotation2d(Units.degreesToRadians(60)));
                 public static final Pose2d blueSourceMidfield = new Pose2d(4.4, 1.6,
-                                new Rotation2d(Units.degreesToRadians(60)));
+                                new Rotation2d(Units.degreesToRadians(-120)));
 
                 public static final Pose2d blueAmpCenter = new Pose2d(4, 5.38,
-                                new Rotation2d(Units.degreesToRadians(-60)));
+                                new Rotation2d(Units.degreesToRadians(120)));
                 public static final Pose2d blueAmpSpeaker = new Pose2d(3.06, 5.33,
                                 new Rotation2d(Units.degreesToRadians(-60)));
                 public static final Pose2d blueAmpMidfield = new Pose2d(4.3, 6.5,
-                                new Rotation2d(Units.degreesToRadians(-60)));
+                                new Rotation2d(Units.degreesToRadians(120)));
 
                 // poses for red stage climb
                 public static final Pose2d redSourceCenter = new Pose2d(12.66, 2.92,
@@ -441,7 +441,7 @@ public final class Constants {
                 public static final Pose2d redAmpCenter = new Pose2d(12.56, 5.31,
                                 new Rotation2d(Units.degreesToRadians(-120)));
                 public static final Pose2d redAmpSpeaker = new Pose2d(3.06, 5.33,
-                                new Rotation2d(Units.degreesToRadians(-1200)));
+                                new Rotation2d(Units.degreesToRadians(-120)));
                 public static final Pose2d redAmpMidfield = new Pose2d(12, 6.5,
                                 new Rotation2d(Units.degreesToRadians(-120)));
 

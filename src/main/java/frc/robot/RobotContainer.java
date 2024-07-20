@@ -367,10 +367,9 @@ public class RobotContainer implements Logged {
 
                 // driver.povDown().onTrue(m_shooter.decreaseRPMCommand(100));
 
-                // driver.povRight().onTrue(Commands.runOnce(() ->
-                // m_arm.incrementArmAngle(10)));
+                driver.povRight().onTrue(Commands.runOnce(() -> m_arm.incrementArmAngle(10)));
 
-                // driver.povLeft().onTrue(Commands.runOnce(() -> m_arm.decrementArmAngle(10)));
+                driver.povLeft().onTrue(Commands.runOnce(() -> m_arm.decrementArmAngle(10)));
 
                 driver.start().onTrue(Commands.runOnce(() -> m_swerve.zeroGyro()));
 
@@ -443,6 +442,10 @@ public class RobotContainer implements Logged {
                                 .onTrue(Commands.runOnce(() -> m_shooter.toggleTriggerSpkrShot()));
                 codriver.rightTrigger().and(codriver.y())
                                 .onTrue(Commands.runOnce(() -> m_shooter.toggleTriggerLobShot()));
+
+                codriver.a().onTrue(m_cf.positionArmRunShooterSpecialCase(
+                                Constants.subwfrArmAngle,
+                                Constants.subwfrShooterSpeed));
 
         }
 
