@@ -762,7 +762,7 @@ public final class Constants {
                 public static final int climberContinuousCurrentLimit = 60;
                 public static double jogSpeed = .25;
                 public static double minPosition = -1;
-                public static double maxPosition = 15;
+                public static double maxPosition = 17;
                 public static double maxinchespersec = climberConversionPositionFactor * maxClimberMotorRPM / 60;// 8
                                                                                                                  // ips
         }

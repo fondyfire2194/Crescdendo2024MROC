@@ -27,8 +27,11 @@ public class PositionClimber extends Command {
 
   // Called when the command is initially scheduled.
   @Override
+  // public void initialize() {
+  //   m_climber.directionMinus = false;
+  // }
   public void initialize() {
-    m_climber.directionMinus = false;
+    m_climber.directionMinus = m_target<m_climber.getPositionLeft();
   }
 
   // Called every time the scheduler runs while the command is scheduled.

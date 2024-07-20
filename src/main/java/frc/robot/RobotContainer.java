@@ -294,8 +294,8 @@ public class RobotContainer implements Logged {
                 driver.rightBumper().and(driver.a().negate())
                                 .onTrue(
                                                 Commands.sequence(
-                                                                Commands.runOnce(
-                                                                                () -> forceRobotRelative = true),
+                                                                // Commands.runOnce(
+                                                                //                 () -> forceRobotRelative = true),
                                                                 m_intake.startIntakeCommand(),
                                                                 m_arm.setGoalCommand(
                                                                                 ArmConstants.pickupAngleRadians),
@@ -309,6 +309,8 @@ public class RobotContainer implements Logged {
                 driver.rightBumper().and(driver.a())
                                 .onTrue(
                                                 Commands.sequence(
+                                                        // Commands.runOnce(
+                                                        //         () -> forceRobotRelative = true),
                                                                 m_arm.setGoalCommand(ArmConstants.pickupAngleRadians),
                                                                 m_intake.startIntakeCommand(),
                                                                 Commands.deadline(
@@ -367,9 +369,9 @@ public class RobotContainer implements Logged {
 
                 // driver.povDown().onTrue(m_shooter.decreaseRPMCommand(100));
 
-                driver.povRight().onTrue(Commands.runOnce(() -> m_arm.incrementArmAngle(10)));
+                driver.povRight().onTrue(Commands.runOnce(() -> m_arm.incrementArmAngle(1)));
 
-                driver.povLeft().onTrue(Commands.runOnce(() -> m_arm.decrementArmAngle(10)));
+                driver.povLeft().onTrue(Commands.runOnce(() -> m_arm.decrementArmAngle(1)));
 
                 driver.start().onTrue(Commands.runOnce(() -> m_swerve.zeroGyro()));
 
@@ -393,6 +395,27 @@ public class RobotContainer implements Logged {
         private void configureCodriverBindings() {
                 // CoDriver
                 // left and right triggers are for climber
+
+
+                codriver.y()
+                                .onTrue(new PositionClimber(m_climber, 10));
+
+                                
+                codriver.a()
+                                .onTrue(new PositionClimber(m_climber, 0));
+
+
+                                   codriver.b()
+                                .onTrue(new PositionClimber(m_climber, 15));
+
+                                codriver.leftTrigger()
+                                .whileTrue(m_climber.raiseClimberArmsCommand(0.6))// .8 ips approx
+                                .onFalse(m_climber.stopClimberCommand());
+
+                codriver.rightTrigger()
+                                .whileTrue(m_climber.lowerClimberArmsCommand(0.3))// .8 ips approx
+                                .onFalse(m_climber.stopClimberCommand());
+
                 codriver.leftTrigger().and(codriver.y())
                                 .whileTrue(m_climber.raiseClimberArmsCommand(0.1))// .8 ips approx
                                 .onFalse(m_climber.stopClimberCommand());
