@@ -248,8 +248,8 @@ public class RobotContainer implements Logged {
                 rumbleDriverTrigger = new Trigger(() ->
 
                 m_intake.isIntaking1
-                                && (m_intake.getAmps() > IntakeConstants.noteInIntakeAmps || m_transfer.noteAtIntake()
-                                                || m_transfer.simnoteatintake)
+                                && (m_transfer.noteAtIntake())
+                                                //|| m_transfer.simnoteatintake)
 
                                 || m_swerve.aligning
                                                 && m_swerve.alignedToTarget && m_arm.getAtSetpoint()
