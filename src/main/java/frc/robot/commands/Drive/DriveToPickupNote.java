@@ -98,10 +98,10 @@ public class DriveToPickupNote extends Command {
     m_intake.stopMotor();
   }
 
-  // Returns true when the command should end.
+  // Returns true when the command should end
   @Override
   public boolean isFinished() {
-    return m_transfer.noteAtIntake() || m_intake.noteMissed || toofar
+    return m_transfer.noteAtIntake() || m_intake.noteMissed 
         || RobotBase.isSimulation() && m_transfer.simnoteatintake;
   }
 }

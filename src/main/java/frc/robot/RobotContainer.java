@@ -498,7 +498,7 @@ public class RobotContainer implements Logged {
 
                 setup.leftTrigger().onTrue(new PositionClimber(m_climber, 12));
 
-                setup.rightBumper().onTrue(m_arm.setGoalCommand(Units.degreesToRadians(35)));
+                setup.rightBumper().onTrue(m_arm.setGoalCommand(Units.degreesToRadians(25)));
 
                 setup.rightTrigger().onTrue(m_arm.setGoalCommand(Units.degreesToRadians(40)));
 

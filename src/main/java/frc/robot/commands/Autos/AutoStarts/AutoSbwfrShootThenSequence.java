@@ -51,7 +51,7 @@ public class AutoSbwfrShootThenSequence extends SequentialCommandGroup {
                                                 sac.sbwfrmoveandshoot(path4),
                                                 Commands.none(),
                                                 () -> cf.noteAtIntake()),
-
+                                
                                 cf.resetAll());
 
         }
@@ -95,7 +95,7 @@ public class AutoSbwfrShootThenSequence extends SequentialCommandGroup {
 
                                 Commands.either(
                                                 sac.sbwfrmoveandshoot(path6),
-                                                Commands.none(),
+                                                sac.sbwfrmoveandshootWithIntake(path6),
                                                 () -> cf.noteAtIntake()),
 
                                 cf.resetAll());

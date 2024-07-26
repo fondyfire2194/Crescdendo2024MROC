@@ -66,7 +66,7 @@ public class ArmSubsystem extends ProfiledPIDSubsystem implements Logged {
     public double appliedVolts;
     @Log.NT(key = "armpidout")
     private double pidout;
-    private PIDController pid = new PIDController(ArmConstants.armKp, 0.0, 0);
+    private PIDController pid = new PIDController(ArmConstants.armKp, ArmConstants.armKi, 0);
     public double angleToleranceRads = ArmConstants.angleTolerance;
     @Log.NT(key = "enablearm")
     public boolean enableArm;

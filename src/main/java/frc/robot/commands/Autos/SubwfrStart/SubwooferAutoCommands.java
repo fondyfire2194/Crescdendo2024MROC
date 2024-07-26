@@ -121,6 +121,20 @@ public class SubwooferAutoCommands {
                                 shoot());
         }
 
+        public Command sbwfrmoveandshootWithIntake(sbwfrpaths path) {
+                return
+
+                Commands.sequence(
+                                m_intake.startIntakeCommand(),
+                                Commands.parallel(
+                                                move(path),
+                                                Commands.sequence(
+                                                                Commands.waitSeconds(.75),
+                                                                setArmShooter(Constants.subwfrArmAngle,
+                                                                                Constants.subwfrShooterSpeed)),
+                                                shoot()));
+        }
+
         public Command moveAndPickup(sbwfrpaths path) {
                 return Commands.parallel(
                                 move(path),
